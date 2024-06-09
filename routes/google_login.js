@@ -46,10 +46,10 @@ router.get('/', (req, res) => {
                         const result = await client.query('SELECT * FROM users WHERE name = $1', user)
                         if(result.rows.length === 0){
                             const currentDate = new Date();
-                            const result = await client.query('INSERT INTO users (name, joined, lastvisited) VALUES ($1, $2, $3)', user, currentDate, currentDate);
+                            const result = await client.query('INSERT INTO users (name, joined, lastvisited) VALUES ($1, $2, $3)', user, currentDate, currentDate)
                         }else{
                             const currentDate = new Date();
-                            const result = await client.query('UPDATE users SET lastvisited = $1 WHERE name = $2', currentDate, user);
+                            const result = await client.query('UPDATE users SET lastvisited = $1 WHERE name = $2', currentDate, user)
                         }
                         for(let row of result.rows){
                           console.log(JSON.stringify(row))
