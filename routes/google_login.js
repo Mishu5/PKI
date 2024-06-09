@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const express = require('express')
 const OAuth2Data = require('./google_key.json');
+const { use } = require('./google_login');
 const router  = express.Router();
 
 
@@ -25,12 +26,42 @@ router.get('/', (req, res) => {
         oauth2.userinfo.v2.me.get(function(err,result){
           if(err)
             {
-              console.log('Niestety Blad!!')
-              console.log(err)
+                console.log('Niestety Blad!!')
+                console.log(err)
             }
             else{
-              loggedUser = result.data.name
-              console.log(loggedUser)
+                loggedUser = result.data.name
+
+                const addUser = async (user) => {
+                    try{
+                        const client = new Client({
+                          user: process.env.PGUSER,
+                          host: process.env.PGHOST,
+                          database: process.env.PGDATABASE,
+                          password: process.env.PGPASSWORD,
+                          port: process.env.PGPORT,
+                          ssl: true
+                        })
+                        await client.connect()
+                        const result = await client.query('SELECT * FROM users WHERE name = $1', user)
+                        if(result.rows.length === 0){
+                            const currentDate = new Date();
+                            const result = await client.query('INSERT INTO users (name, joined, lastvisited) VALUES ($1, $2, $3)', user, currentDate, currentDate);
+                        }else{
+                            const currentDate = new Date();
+                            const result = await client.query('UPDATE users SET lastvisited = $1 WHERE name = $2', currentDate, user);
+                        }
+                        for(let row of result.rows){
+                          console.log(JSON.stringify(row))
+                        }
+                        await client.end()
+                        res.render('index', { title: "google", users: result.rows });
+                    }catch(error){
+                      console.log(error)
+                    }
+                }
+                addUser(loggedUser)
+                console.log(loggedUser)
             }
             res.render('google', {name: loggedUser, pic: result.data.picture})
         })
