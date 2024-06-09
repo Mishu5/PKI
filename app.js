@@ -5,6 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var dotenv = require("dotenv");
 
+var res = dotenv.config('./.env');
+
+console.log(res)
+
 var googleLoginRouter = require('./routes/google_login');
 var usersRouter = require('./routes/users');
 var indexRouter = require('./routes/index');
@@ -20,7 +24,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(dotenv.config());
 
 app.use('/', indexRouter);
 app.use('/google', googleLoginRouter);
@@ -41,5 +44,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+console.log("Started...");
 
 module.exports = app;
